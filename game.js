@@ -14,20 +14,29 @@ let config = {
     }
 };
 let game = new Phaser.Game(config);
-let player, cursors, platforms;
+let player, cursors, platforms, coins;
 gameScene.preload = function preload() {
     this.load.spritesheet("player", ".//assets//sprite//char.png", { frameWidth: 40, frameHeight: 45, });
+    this.load.spritesheet("coin", ".//assets//sprite//coin.png", { frameWidth: 30, frameHeight: 30, });
     this.load.image("platform", ".//assets//sprite//platform.png");
+    
 }
 gameScene.create = function create() {
     // scoreText = this.add.text(300, 200, "Hello Phaser", { fontSize: '32px', fill: "white" });
     player = this.physics.add.sprite(250, 200, 'player');
     player.setFrame(4);
+    // ***********************static group*****************
     platforms = this.physics.add.staticGroup();
     platforms.create(50, 580, 'platform').setScale(2, 0.7).refreshBody();
     platforms.create(215, 110, 'platform').setScale(0.2, 0.3).refreshBody();
     platforms.create(555, 200, 'platform').setScale(0.2, 0.3).refreshBody();
     platforms.create(260, 350, 'platform').setScale(0.2, 0.3).refreshBody();
+    coins = this.physics.add.group({
+        key: "coin",
+        repeat: 10,
+        setXY: { x: 20, y: 0, stepX: 70 }
+    });
+    // **************************Animations***********************
     this.anims.create({
         key: 'left',
         frames: this.anims.generateFrameNumbers('player', { start: 10, end: 19 }),
@@ -55,9 +64,18 @@ gameScene.create = function create() {
         frames: [{ key: 'player', frame: 19 }],
         frameRate: 20
     });
+    this.anims.create({
+        key: "shine",
+        frames: this.anims.generateFrameNumbers('coin', { start: 0, end: 9 }),
+        frameRate: 7,
+        repeat: -1
+    })
+    coins.playAnimation("shine");
     // player.anims.play("left");
     player.setCollideWorldBounds(true);
     this.physics.add.collider(player, platforms);
+    this.physics.add.collider(coins, platforms);
+    this.physics.add.overlap(player, coins, collectCoin, null, this);
     cursors = this.input.keyboard.createCursorKeys();
 }
 gameScene.update = function update() {
@@ -75,7 +93,6 @@ gameScene.update = function update() {
             player.anims.play("right", true);
         } else {
             player.anims.play("RJump", true);
-
         }
     } else {
         player.setVelocityX(0);
@@ -83,6 +100,14 @@ gameScene.update = function update() {
     }
     if (cursors.space.isDown) {
         player.setVelocityY(-300);
-
+    }
+}
+function collectCoin(player, coin) {
+    // disable ,hide
+    coin.disableBody(true, true);
+    if (coins.countActive(true) === 0) {
+        coins.children.iterate((coin) => {
+            coin.enableBody(true, coin.x, 0, true, true);
+        });
     }
 }
