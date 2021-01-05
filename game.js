@@ -8,7 +8,7 @@ let config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 350 },
+            gravity: { y: 320 },
             debug: false
         }
     }
@@ -34,7 +34,7 @@ gameScene.create = function create() {
     platforms.create(50, 580, 'platform').setScale(2, 0.7).refreshBody();
     platforms.create(215, 110, 'platform').setScale(0.2, 0.3).refreshBody();
     platforms.create(555, 200, 'platform').setScale(0.2, 0.3).refreshBody();
-    platforms.create(260, 350, 'platform').setScale(0.2, 0.3).refreshBody();
+    platforms.create(260, 370, 'platform').setScale(0.2, 0.3).refreshBody();
     coins = this.physics.add.group({
         key: "coin",
         repeat: 10,
@@ -115,7 +115,7 @@ gameScene.update = function update() {
     }
     if (cursors.space.isDown && player.body.touching.down) {
         this.sound.playAudioSprite('sfx', "numkey");
-        player.setVelocityY(-300);
+        player.setVelocityY(-350);
     }
 }
 function collectCoin(player, coin) {
