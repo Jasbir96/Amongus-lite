@@ -9,17 +9,21 @@ let config = {
         default: 'arcade',
         arcade: {
             gravity: { y: 350 },
-            debug: true
+            debug: false
         }
     }
 };
 let game = new Phaser.Game(config);
-let player, cursors, platforms, coins, coronas, gameOver;
+let player, cursors, platforms, coins, coronas, gameOver, score, scoreText;
 gameScene.preload = function preload() {
     this.load.spritesheet("player", ".//assets//sprite//char.png", { frameWidth: 40, frameHeight: 45, });
     this.load.spritesheet("coin", ".//assets//sprite//coin.png", { frameWidth: 30, frameHeight: 30, });
     this.load.image("platform", ".//assets//sprite//platform.png");
     this.load.image("corona", ".//assets//sprite//corona.png");
+    this.load.audioSprite('sfx', './/assets//audio//fx_mixdown.json', [
+        './/assets//audio//fx_mixdown.ogg',
+        './/assets//audio//fx_mixdown.mp3'
+    ]);
 }
 gameScene.create = function create() {
     // scoreText = this.add.text(300, 200, "Hello Phaser", { fontSize: '32px', fill: "white" });
@@ -38,7 +42,6 @@ gameScene.create = function create() {
     });
     coronas = this.physics.add.group();
     createCorona();
-
     // **************************Animations***********************
     this.anims.create({
         key: 'left',
@@ -80,9 +83,13 @@ gameScene.create = function create() {
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(coins, platforms);
     this.physics.add.collider(coronas, platforms);
-    this.physics.add.collider(player, coronas, hitCorona, null, this)
+    this.physics.add.overlap(player, coronas, hitCorona, null, this)
     this.physics.add.overlap(player, coins, collectCoin, null, this);
     cursors = this.input.keyboard.createCursorKeys();
+
+    // adding score
+    score = 0;
+    scoreText = this.add.text(16, 16, 'SCORE:0', { fontSize: '16px', fill: "white" });
 }
 gameScene.update = function update() {
     if (gameOver == true)
@@ -106,13 +113,17 @@ gameScene.update = function update() {
         player.setVelocityX(0);
         player.anims.play("idle", true);
     }
-    if (cursors.space.isDown&&player.body.touching.down) {
+    if (cursors.space.isDown && player.body.touching.down) {
+        this.sound.playAudioSprite('sfx', "numkey");
         player.setVelocityY(-300);
     }
 }
 function collectCoin(player, coin) {
     // disable ,hide
     coin.disableBody(true, true);
+    this.sound.playAudioSprite('sfx', "ping");
+    score += 100;
+    scoreText.setText('Score: ' + score);
     if (coins.countActive(true) === 0) {
         coins.children.iterate((coin) => {
             coin.enableBody(true, coin.x, 0, true, true);
